@@ -2,12 +2,14 @@ document.addEventListener("DOMContentLoaded", initCarrito);
 document.addEventListener("navbarLoaded", initCarrito);
 
 function initCarrito() {
+
     const botonVaciar = document.getElementById('vaciar-carrito');
     const listaCarrito = document.getElementById('lista-carrito');
     const iconoCarrito = document.getElementById('icono-carrito') || document.querySelector('.d-none.d-lg-flex') || document.querySelector('.bi-cart-fill')?.closest('a,button,.nav-link,div') || document.querySelector('.contador-carrito')?.closest('a,button,.nav-link,div');
     const totalElemento = document.getElementById('total');
     const productContainer = document.getElementById('productContainer');
     const btnPago = document.getElementById('btn-pago');
+
 
     // --------------------
     // HELPERS LOCALSTORAGE
@@ -164,6 +166,8 @@ function actualizarCarrito() {
         // Eventos dinámicos
         listaCarrito.querySelectorAll('button').forEach((btn) => {
             btn.addEventListener('click', () => {
+
+
                 const id = btn.getAttribute('data-id');
                 const accion = btn.getAttribute('data-accion');
                 const carrito = getCarrito();
@@ -206,6 +210,25 @@ function asignarEventosCarrito() {
         boton.replaceWith(nuevoBoton);
 
         nuevoBoton.addEventListener('click', () => {
+
+                const usuarioLogueado = JSON.parse(localStorage.getItem("usuarioLogueado"));
+
+                // 🚨 Si no hay usuario logueado → redirige al login
+                if (!usuarioLogueado) {
+                    Swal.fire({
+                        icon: "warning",
+                        title: "Debes iniciar sesión",
+                        text: "Por favor inicia sesión para agregar productos al carrito.",
+                        showConfirmButton: true,
+                    }).then((result) => {
+                        if(result.isConfirmed){
+                            window.location.href = `${isGitHubPages ? "/" + repoName : ""}/pages/login.html`;
+                        }
+                        // window.location.href = "login.html"; // Ajusta ruta si es necesario
+                    });
+                    return; // Detener aquí
+                }
+
             const card = nuevoBoton.closest('.card, .product-card');
 
             // Nombre

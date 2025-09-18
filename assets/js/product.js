@@ -123,8 +123,34 @@ document.addEventListener("DOMContentLoaded", () => {
     return;
   }
 
+
+
   addBtn.addEventListener("click", (e) => {
     try {
+
+//       // Detectar si corre en GitHub Pages
+// const isGitHubPages = window.location.hostname.includes("github.io");
+// // Nombre de tu repo (ajústalo si cambia)
+// const repoName = "GeekXpress-front";
+
+
+
+      const usuarioLogueado = JSON.parse(localStorage.getItem("usuarioLogueado"));
+      if (!usuarioLogueado) {
+        Swal.fire({
+          icon: "warning",
+          title: "Debes iniciar sesión",
+          text: "Por favor inicia sesión para agregar productos al carrito.",
+          showConfirmButton: true
+        }).then((result) => {
+          if(result.isConfirmed){
+              window.location.href = `${isGitHubPages ? "/" + repoName : ""}/pages/login.html`;
+          }
+          // window.location.href = "pages/login.html"; // ajusta la ruta según tu proyecto
+        });
+        return; // detener aquí
+      }
+
       // if (stockNum === 0) {
       //   alert("Lo sentimos, el producto está agotado.");
       //   console.log(stockNum);

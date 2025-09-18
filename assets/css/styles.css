@@ -209,7 +209,7 @@
 }
 
 .sn-sergio-back {
-  background-image: url('../img/backSergio.png');
+  background-image: url('../img/backSergio.jpeg');
 }
 
 .sn-alexa-back {
@@ -1459,6 +1459,8 @@ h1::after, h2::after {
         0 20px 60px rgba(64, 223, 255, 0.2),
         0 0 0 1px rgba(64, 223, 255, 0.4),
         inset 0 1px 0 rgba(255, 255, 255, 0.2);
+         cursor: pointer;
+
 }
 
 .card-img-container {
@@ -2327,7 +2329,7 @@ footer a:hover svg {
   justify-content: center;
   flex-wrap: wrap;
   gap: 0.5rem;
-  margin-top: -1.6rem;
+  margin-top: 0rem;
   margin-bottom: 0.3rem; 
 }
 
@@ -2889,6 +2891,28 @@ footer .small {
   color: #888;
 }
 
+
+
+/* ================ANDRES================================ */
+
+/* estilos del modal de productos */
+/* tuve que poner important para que se sobreponga a los estilos de bbootstrap te encargo lo bonito jaja
+graciaaaas */
+
+.modal-content.modal-custom {
+  background: linear-gradient(135deg, #1a1a2e, #16213e) !important;
+  color: #f1f1f1 !important;
+  border-radius: 15px !important;
+  border: 2px solid #6c63ff !important;
+  box-shadow: 0 0 20px rgba(108, 99, 255, 0.7) !important;
+}
+
+
+
+
+
+
+
 /* CARRITO */
 .carrito-container {
   background: linear-gradient(135deg, #0b0b0b, #190a28, #0b0b0b);
@@ -3243,16 +3267,4 @@ footer .small {
     padding: 0.75rem 1rem;
     font-size: 1rem;
   }
-}
-
-/* estilos del modal de productos */
-/* tuve que poner important para que se sobreponga a los estilos de bbootstrap te encargo lo bonito jaja
-graciaaaas */
-
-.modal-content.modal-custom {
-  background: linear-gradient(135deg, #1a1a2e, #16213e) !important;
-  color: #f1f1f1 !important;
-  border-radius: 15px !important;
-  border: 2px solid #6c63ff !important;
-  box-shadow: 0 0 20px rgba(108, 99, 255, 0.7) !important;
 }
