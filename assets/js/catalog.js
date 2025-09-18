@@ -3,28 +3,26 @@ document.addEventListener("DOMContentLoaded", () => {
   const searchInput = document.getElementById("searchInput");
   const categoryFilter = document.getElementById("categoryFilter");
 
+  let allProducts = []; // 🔹 Aquí guardamos todos los productos del backend
+
   if (!productContainer) {
     console.error("❌ No se encontró #productContainer");
     return;
   }
 
-  let allProducts = []; // todos los productos cargados
-  let currentCategory = ""; // categoría seleccionada
-
-  // 🔹 Obtener productos desde el backend
-  async function fetchProducts(category = "") {
+  // 🔹 Obtener productos desde el backend (SOLO UNA VEZ)
+  async function fetchProducts() {
     try {
       console.log("🔄 Solicitando productos al backend...");
-      let url = "http://localhost:8080/products";
-      if (category && category !== "Todas") {
-        url += `/category/${category}`;
-      }
-
+      const url = "http://localhost:8080/products";
       const response = await fetch(url);
       if (!response.ok) throw new Error("Error en la petición al backend");
       const data = await response.json();
+      const categoryFilter = document.getElementById("categoryFilter");
 
-      return data.map(p => ({
+
+      // Mapeamos los productos al formato que usamos en frontend
+      allProducts = data.map(p => ({
         id: p.id,
         nombre: p.name,
         categoria: p.categories?.[0]?.name || "Sin categoría",
@@ -33,11 +31,34 @@ document.addEventListener("DOMContentLoaded", () => {
         descripcion: p.description,
         imagen: (p.images && p.images.length > 0) ? p.images[0].url : "../assets/img/default.png"
       }));
+
+      renderProducts(allProducts);
     } catch (err) {
       console.error("❌ No se pudieron cargar los productos:", err);
-      return [];
+      productContainer.innerHTML = "<p class='text-center'>Error al cargar productos.</p>";
     }
   }
+
+// 🔹 Llenar el select dinámicamente con categorías desde el backend
+async function loadCategories() {
+  try {
+    const response = await fetch("http://localhost:8080/categories");
+    if (!response.ok) throw new Error("Error al obtener categorías");
+    const categories = await response.json();
+
+    // Siempre agregamos la opción "todas"
+    categoryFilter.innerHTML = `<option value="all">Todas las categorías</option>`;
+
+    categories.forEach(cat => {
+      const option = document.createElement("option");
+      option.value = cat.name; // ⚠️ importante: debe coincidir con lo que trae tu backend
+      option.textContent = cat.name;
+      categoryFilter.appendChild(option);
+    });
+  } catch (err) {
+    console.error("❌ Error cargando categorías:", err);
+  }
+}
 
   // 🔹 Formatear precio en COP
   function formatearPrecio(valor) {
@@ -48,7 +69,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }).format(valor);
   }
 
-  // 🔹 Crear tarjeta de producto (respeta tus estilos)
+  // 🔹 Crear tarjeta de producto
   function createProductCard(prod) {
     const cardCol = document.createElement("div");
     cardCol.classList.add("col-12", "col-sm-6", "col-md-4", "mb-4");
@@ -72,9 +93,8 @@ document.addEventListener("DOMContentLoaded", () => {
     return cardCol;
   }
 
-  // 🔹 Renderizar productos en pantalla
+  // 🔹 Renderizar productos
   function renderProducts(products) {
-    console.log(`🎨 Pintando ${products.length} productos en pantalla...`);
     productContainer.innerHTML = "";
 
     if (!products || products.length === 0) {
@@ -88,29 +108,29 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
-  // 🔎 Filtrar por búsqueda
-  function filterBySearch(term) {
-    const filtered = allProducts.filter(prod =>
-      prod.nombre.toLowerCase().includes(term.toLowerCase())
-    );
+  // 🔹 Aplicar filtros (categoría + búsqueda)
+  function applyFilters() {
+    const searchTerm = searchInput.value.toLowerCase();
+    const selectedCategory = categoryFilter.value;
+
+    const filtered = allProducts.filter(prod => {
+      const matchesCategory =
+        selectedCategory === "" || selectedCategory === "all" || prod.categoria === selectedCategory;
+      const matchesSearch =
+        prod.nombre.toLowerCase().includes(searchTerm) ||
+        prod.descripcion?.toLowerCase().includes(searchTerm);
+
+      return matchesCategory && matchesSearch;
+    });
+
     renderProducts(filtered);
   }
 
-  // 📌 Listeners
-  searchInput?.addEventListener("input", (e) => {
-    filterBySearch(e.target.value);
-  });
-
-  categoryFilter?.addEventListener("change", async (e) => {
-    currentCategory = e.target.value;
-    allProducts = await fetchProducts(currentCategory);
-    renderProducts(allProducts);
-    searchInput.value = ""; // limpiar búsqueda al cambiar categoría
-  });
+  // 🎯 Eventos de filtro
+  searchInput.addEventListener("input", applyFilters);
+  categoryFilter.addEventListener("change", applyFilters);
 
   // 🚀 Inicializar
-  fetchProducts().then(products => {
-    allProducts = products;
-    renderProducts(products);
-  });
+  fetchProducts();
+  loadCategories();
 });
