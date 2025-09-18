@@ -1,4 +1,4 @@
-// admin3.js (Cloudinary integrado)
+// admin3.js (Cloudinary integrado con alertas mejoradas)
 const CLOUDINARY_CLOUD_NAME = 'dz4qsmco8';
 const CLOUDINARY_UPLOAD_PRESET = 'geekxpress';
 const CLOUDINARY_UPLOAD_URL = `https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD_NAME}/image/upload`;
@@ -23,9 +23,89 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
-  // ---------- Estado ----------
+  // estado
   let editProductIndex = null;
   let selectedFiles = [];
+
+  // alertas
+  const AlertasPersonalizadas = {
+    exito: (titulo, mensaje) => {
+      return Swal.fire({
+        icon: 'success',
+        title: titulo,
+        text: mensaje,
+        background: '#190a28',
+        color: '#f8e8ff',
+        confirmButtonColor: '#40DFFF',
+        confirmButtonText: 'Genial',
+        showClass: {
+          popup: 'animate__animated animate__fadeInDown'
+        },
+        hideClass: {
+          popup: 'animate__animated animate__fadeOutUp'
+        }
+      });
+    },
+    error: (titulo, mensaje) => {
+      return Swal.fire({
+        icon: 'error',
+        title: titulo,
+        text: mensaje,
+        background: '#190a28',
+        color: '#f8e8ff',
+        confirmButtonColor: '#dc3545',
+        confirmButtonText: 'Entendido',
+        showClass: {
+          popup: 'animate__animated animate__shakeX'
+        }
+      });
+    },
+    advertencia: (titulo, mensaje) => {
+      return Swal.fire({
+        icon: 'warning',
+        title: titulo,
+        text: mensaje,
+        background: '#190a28',
+        color: '#f8e8ff',
+        confirmButtonColor: '#ffc107',
+        confirmButtonText: 'Ok',
+        showClass: {
+          popup: 'animate__animated animate__pulse'
+        }
+      });
+    },
+    confirmacion: (titulo, mensaje) => {
+      return Swal.fire({
+        title: titulo,
+        text: mensaje,
+        icon: 'question',
+        background: '#190a28',
+        color: '#f8e8ff',
+        showCancelButton: true,
+        confirmButtonColor: '#dc3545',
+        cancelButtonColor: '#6c757d',
+        confirmButtonText: 'Sí, eliminar',
+        cancelButtonText: 'Cancelar',
+        showClass: {
+          popup: 'animate__animated animate__zoomIn'
+        }
+      });
+    },
+    cargando: (titulo, mensaje) => {
+      return Swal.fire({
+        title: titulo,
+        text: mensaje,
+        background: '#190a28',
+        color: '#f8e8ff',
+        allowOutsideClick: false,
+        allowEscapeKey: false,
+        showConfirmButton: false,
+        didOpen: () => {
+          Swal.showLoading();
+        }
+      });
+    }
+  };
 
   // ---------- Helpers ----------
   function getProducts() {
@@ -89,13 +169,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // ---------- Formatear moneda COP ----------
   function formatearCOP(valor) {
-  return new Intl.NumberFormat("es-CO", {
-    style: "currency",
-    currency: "COP",
-    minimumFractionDigits: 0, // sin decimales
-    maximumFractionDigits: 0
-  }).format(valor);
-}
+    return new Intl.NumberFormat("es-CO", {
+      style: "currency",
+      currency: "COP",
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 0
+    }).format(valor);
+  }
 
   // ---------- Render tabla ----------
   function renderizarTablaProductos(filtro = '') {
@@ -137,7 +217,7 @@ document.addEventListener('DOMContentLoaded', () => {
         <td>${producto.descripcion ? String(producto.descripcion).substring(0,40) + '...' : 'Sin descripción'}</td>
         <td>${producto.sku || ''}</td>
         <td><span class="bg-info">${producto.categoria || 'Sin categoría'}</span></td>
-        <td>${ formatearCOP(producto.precio)}</td>
+        <td>${formatearCOP(producto.precio)}</td>
         <td>${producto.stock ?? 0}</td>
         <td><span class="${getEstadoClass(producto.estado)}">${producto.estado || 'Inactivo'}</span></td>
         <td>
@@ -159,12 +239,10 @@ document.addEventListener('DOMContentLoaded', () => {
     if (imageInput) imageInput.value = '';
     const btnSubmit = document.getElementById('admin-product-submit');
     if (btnSubmit) {
-    const span = btnSubmit.querySelector('span') || btnSubmit;
-    span.textContent = "Crear producto";
+      const span = btnSubmit.querySelector('span') || btnSubmit;
+      span.textContent = "Crear producto";
+    }
   }
-  }
-
-
 
   // ---------- Preview & selección ----------
   if (imageInput) {
@@ -192,7 +270,9 @@ document.addEventListener('DOMContentLoaded', () => {
         img.style.height = '100%';
         img.style.objectFit = 'cover';
         img.style.borderRadius = '6px';
-        img.addEventListener('load', () => { try { URL.revokeObjectURL(displayUrl); } catch (_) {} });
+        img.addEventListener('load', () => { 
+          try { URL.revokeObjectURL(displayUrl); } catch (_) {} 
+        });
 
         if (idx === 0) {
           const badge = document.createElement('span');
@@ -215,7 +295,10 @@ document.addEventListener('DOMContentLoaded', () => {
       e.preventDefault();
 
       const sku = (document.getElementById('skuProducto')?.value || '').trim();
-      if (!sku) { alert('El SKU es obligatorio.'); return; }
+      if (!sku) { 
+        AlertasPersonalizadas.error('Campo requerido', 'El SKU es obligatorio para identificar el producto.');
+        return; 
+      }
 
       const nombre = document.getElementById('nombreProducto')?.value || 'Sin nombre';
       const descripcion = document.getElementById('descripcionProducto')?.value || '';
@@ -230,12 +313,21 @@ document.addEventListener('DOMContentLoaded', () => {
 
       let nuevasUrls = [];
       if (selectedFiles.length > 0) {
+        // Mostrar alerta de carga
+        AlertasPersonalizadas.cargando('Subiendo imágenes...', 'Por favor espera mientras procesamos las imágenes');
+        
         try {
           const resultados = await Promise.all(selectedFiles.map(f => uploadToCloudinary(f)));
           nuevasUrls = resultados.map(r => r.url);
+          Swal.close(); // Cerrar la alerta de carga
         } catch (err) {
           console.error('Error subiendo imágenes a Cloudinary:', err);
-          alert('Ocurrió un error subiendo una o más imágenes. Revisa la consola para más detalles.');
+          Swal.close();
+          AlertasPersonalizadas.error(
+            'Error al subir imágenes', 
+            'Ocurrió un problema subiendo una o más imágenes. Por favor intenta nuevamente.'
+          );
+          return;
         }
       }
 
@@ -258,14 +350,23 @@ document.addEventListener('DOMContentLoaded', () => {
 
       if (isEditing) {
         productos[editProductIndex] = productoData;
-        alert(`Producto "${productoData.nombre}" actualizado correctamente!`);
+        AlertasPersonalizadas.exito(
+          '¡Producto actualizado!', 
+          `El producto "${productoData.nombre}" se ha actualizado correctamente.`
+        );
       } else {
         if (productos.some(p => p.sku === sku)) {
-          alert(`Ya existe un producto con el SKU "${sku}".`);
+          AlertasPersonalizadas.advertencia(
+            'SKU duplicado', 
+            `Ya existe un producto con el SKU "${sku}". Por favor usa un SKU diferente.`
+          );
           return;
         }
         productos.push(productoData);
-        alert(`Producto "${productoData.nombre}" creado correctamente!`);
+        AlertasPersonalizadas.exito(
+          '¡Producto creado!', 
+          `El producto "${productoData.nombre}" se ha creado exitosamente.`
+        );
       }
 
       setProducts(productos);
@@ -291,7 +392,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // ---------- Acciones en la tabla (delegación) ----------
   if (tablaProductosBody) {
-    tablaProductosBody.addEventListener('click', (e) => {
+    tablaProductosBody.addEventListener('click', async (e) => {
       const btn = e.target.closest('button');
       if (!btn) return;
       const index = parseInt(btn.dataset.index);
@@ -299,16 +400,21 @@ document.addEventListener('DOMContentLoaded', () => {
       if (isNaN(index) || !productos[index]) return;
 
       if (btn.classList.contains('eliminar-btn')) {
-        if (confirm(`¿Eliminar el producto "${productos[index].nombre}"?`)) {
+        const resultado = await AlertasPersonalizadas.confirmacion(
+          '¿Eliminar producto?',
+          `¿Estás seguro de que deseas eliminar "${productos[index].nombre}"? Esta acción no se puede deshacer.`
+        );
+        
+        if (resultado.isConfirmed) {
           productos.splice(index, 1);
           setProducts(productos);
           renderizarTablaProductos(busquedaProductoInput?.value || '');
+          AlertasPersonalizadas.exito('¡Eliminado!', 'El producto ha sido eliminado correctamente.');
         }
         return;
       }
 
       if (btn.classList.contains('editar-btn')) {
-
         const btnSubmit = document.getElementById('admin-product-submit');
         if (btnSubmit) {
           const span = btnSubmit.querySelector('span') || btnSubmit; 
@@ -361,39 +467,37 @@ document.addEventListener('DOMContentLoaded', () => {
       }
 
       if (btn.classList.contains('ver-btn')) {
-  const producto = productos[index];
+        const producto = productos[index];
 
-  // Generar las imágenes
-  let imagenesHTML = '';
-  if (producto.imagenes && producto.imagenes.length > 0) {
-    imagenesHTML = producto.imagenes.map(img =>
-      `<img src="${img}" alt="${producto.nombre}" class="img-thumbnail me-2 mb-2" style="max-width:150px;">`
-    ).join('');
-  } else {
-    imagenesHTML = `<p class="text-muted">Sin imágenes</p>`;
-  }
+        // Generar las imágenes
+        let imagenesHTML = '';
+        if (producto.imagenes && producto.imagenes.length > 0) {
+          imagenesHTML = producto.imagenes.map(img =>
+            `<img src="${img}" alt="${producto.nombre}" class="img-thumbnail me-2 mb-2" style="max-width:150px;">`
+          ).join('');
+        } else {
+          imagenesHTML = `<p class="text-muted">Sin imágenes</p>`;
+        }
 
-  // Contenido del modal
-  const modalContent = `
-    <p><strong>Nombre:</strong> ${producto.nombre}</p>
-    <p><strong>SKU:</strong> ${producto.sku}</p>
-    <p><strong>Categoría:</strong> ${producto.categoria || 'Sin categoría'}</p>
-    <p><strong>Precio:</strong> ${formatearCOP(producto.precio)}</p>
-    <p><strong>Stock:</strong> ${producto.stock ?? 0}</p>
-    <p><strong>Estado:</strong> ${producto.estado || 'Inactivo'}</p>
-    <p><strong>Descripción:</strong> ${producto.descripcion || 'Sin descripción'}</p>
-    <div class="d-flex flex-wrap">${imagenesHTML}</div>
-  `;
+        // Contenido del modal
+        const modalContent = `
+          <p><strong>Nombre:</strong> ${producto.nombre}</p>
+          <p><strong>SKU:</strong> ${producto.sku}</p>
+          <p><strong>Categoría:</strong> ${producto.categoria || 'Sin categoría'}</p>
+          <p><strong>Precio:</strong> ${formatearCOP(producto.precio)}</p>
+          <p><strong>Stock:</strong> ${producto.stock ?? 0}</p>
+          <p><strong>Estado:</strong> ${producto.estado || 'Inactivo'}</p>
+          <p><strong>Descripción:</strong> ${producto.descripcion || 'Sin descripción'}</p>
+          <div class="d-flex flex-wrap">${imagenesHTML}</div>
+        `;
 
-  // Insertar el contenido en el body del modal
-  document.getElementById('detalleProductoBody').innerHTML = modalContent;
+        // Insertar el contenido en el body del modal
+        document.getElementById('detalleProductoBody').innerHTML = modalContent;
 
-  // Abrir el modal con Bootstrap
-  const modal = new bootstrap.Modal(document.getElementById('detalleProductoModal'));
-  modal.show();
-}
-
-
+        // Abrir el modal con Bootstrap
+        const modal = new bootstrap.Modal(document.getElementById('detalleProductoModal'));
+        modal.show();
+      }
     });
   }
 
@@ -414,17 +518,17 @@ document.addEventListener('DOMContentLoaded', () => {
     { usuario: 'María Gómez', email: 'maria@example.com', tipoDoc: 'CE', documento: '87654321', telefono: '3109876543', fechaNacimiento: '1990-07-22', genero: 'femenino', direccion: 'Carrera 50 #20-30', ciudad: 'Medellín', rol: 'cliente', estado: 'Inactivo', fechaRegistro: '2024-02-20', notas: '' }
   ];
 
-  function guardarUsuarios() { localStorage.setItem('usuarios', JSON.stringify(usuarios)); }
+  function guardarUsuarios() { 
+    localStorage.setItem('usuarios', JSON.stringify(usuarios)); 
+  }
+  
   function limpiarFormularioUsuario() {
     if (!formNuevoUsuario) return;
     formNuevoUsuario.reset();
     editUserIndex = null;
     const fechaReg = document.getElementById('fechaRegistro');
     if (fechaReg) fechaReg.value = new Date().toISOString().split('T')[0];
-
     setTextoBotonUsuario("crear");
-
-
   }
 
   // ---------- Render tabla usuarios ----------
@@ -513,12 +617,30 @@ document.addEventListener('DOMContentLoaded', () => {
 
       if (editUserIndex !== null) {
         usuarios[editUserIndex] = nuevoUsuario;
-        alert(`Usuario "${nuevoUsuario.usuario}" actualizado exitosamente.`);
+        AlertasPersonalizadas.exito(
+          '¡Usuario actualizado!', 
+          `El usuario "${nuevoUsuario.usuario}" ha sido actualizado exitosamente.`
+        );
       } else {
-        if (usuarios.some(u => u.email === nuevoUsuario.email)) { alert('Ya existe un usuario con ese email.'); return; }
-        if (usuarios.some(u => u.documento === nuevoUsuario.documento && u.tipoDoc === nuevoUsuario.tipoDoc)) { alert('Ya existe un usuario con ese tipo y número de documento.'); return; }
+        if (usuarios.some(u => u.email === nuevoUsuario.email)) { 
+          AlertasPersonalizadas.advertencia(
+            'Email duplicado', 
+            'Ya existe un usuario registrado con ese email. Por favor usa un email diferente.'
+          ); 
+          return; 
+        }
+        if (usuarios.some(u => u.documento === nuevoUsuario.documento && u.tipoDoc === nuevoUsuario.tipoDoc)) { 
+          AlertasPersonalizadas.advertencia(
+            'Documento duplicado', 
+            'Ya existe un usuario con ese tipo y número de documento. Verifica los datos ingresados.'
+          ); 
+          return; 
+        }
         usuarios.push(nuevoUsuario);
-        alert(`Usuario "${nuevoUsuario.usuario}" creado exitosamente.`);
+        AlertasPersonalizadas.exito(
+          '¡Usuario creado!', 
+          `El usuario "${nuevoUsuario.usuario}" ha sido creado exitosamente.`
+        );
       }
 
       localStorage.setItem('usuarios', JSON.stringify(usuarios));
@@ -533,47 +655,50 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   if (tablaUsuariosBody) {
-    tablaUsuariosBody.addEventListener('click', e => {
-
+    tablaUsuariosBody.addEventListener('click', async (e) => {
       const btn = e.target.closest('button');
       if (!btn) return;
       const index = parseInt(btn.dataset.index);
       if (isNaN(index) || !usuarios[index]) return;
 
       if (btn.classList.contains('eliminar-usuario')) {
-        if (confirm(`¿Seguro que deseas eliminar al usuario "${usuarios[index].usuario}"?`)) {
+        const resultado = await AlertasPersonalizadas.confirmacion(
+          '¿Eliminar usuario?',
+          `¿Estás seguro de que deseas eliminar al usuario "${usuarios[index].usuario}"? Esta acción no se puede deshacer.`
+        );
+        
+        if (resultado.isConfirmed) {
           usuarios.splice(index, 1);
           guardarUsuarios();
           renderizarUsuarios(busquedaUsuarioInput?.value || '');
+          AlertasPersonalizadas.exito('¡Usuario eliminado!', 'El usuario ha sido eliminado correctamente.');
         }
         return;
       }
 
-if (btn.classList.contains('ver-usuario')) {
-  const u = usuarios[index];
+      if (btn.classList.contains('ver-usuario')) {
+        const u = usuarios[index];
 
-  const infoHtml = `
-    <div class="col">
-        <p><strong>Nombre:</strong> ${u.usuario}</p>
-        <p><strong>Email:</strong> ${u.email}</p>
-        <p><strong>Documento:</strong> ${u.tipoDoc} ${u.documento}</p>
-        <p><strong>Teléfono:</strong> ${u.telefono || 'No registrado'}</p>
-        <p><strong>Ciudad:</strong> ${u.ciudad || 'No registrada'}</p>
-        <p><strong>Rol:</strong> ${u.rol}</p>
-        <p><strong>Estado:</strong> ${u.estado}</p>
-        <p><strong>Fecha de Registro:</strong> ${u.fechaRegistro}</p>
-    </div>
-    ${u.notas ? `<div class="mt-3"><p><strong>Notas:</strong> ${u.notas}</p></div>` : ''}
-  `;
+        const infoHtml = `
+          <div class="col">
+              <p><strong>Nombre:</strong> ${u.usuario}</p>
+              <p><strong>Email:</strong> ${u.email}</p>
+              <p><strong>Documento:</strong> ${u.tipoDoc} ${u.documento}</p>
+              <p><strong>Teléfono:</strong> ${u.telefono || 'No registrado'}</p>
+              <p><strong>Ciudad:</strong> ${u.ciudad || 'No registrada'}</p>
+              <p><strong>Rol:</strong> ${u.rol}</p>
+              <p><strong>Estado:</strong> ${u.estado}</p>
+              <p><strong>Fecha de Registro:</strong> ${u.fechaRegistro}</p>
+          </div>
+          ${u.notas ? `<div class="mt-3"><p><strong>Notas:</strong> ${u.notas}</p></div>` : ''}
+        `;
 
-  document.getElementById('detalleUsuarioBody').innerHTML = infoHtml;
+        document.getElementById('detalleUsuarioBody').innerHTML = infoHtml;
 
-  const modalEl = document.getElementById('detalleUsuarioModal');
-  const modal = new bootstrap.Modal(modalEl);
-  modal.show();
-}
-
-
+        const modalEl = document.getElementById('detalleUsuarioModal');
+        const modal = new bootstrap.Modal(modalEl);
+        modal.show();
+      }
 
       if (btn.classList.contains('editar-usuario')) {
         editUserIndex = index;
@@ -593,7 +718,6 @@ if (btn.classList.contains('ver-usuario')) {
         (document.getElementById('notasUsuario') || {}).value = u.notas || '';
         (document.getElementById('passwordUsuario') || {}).value = '';
 
-
         setTextoBotonUsuario("editar");
 
         const modalEl = document.getElementById('nuevoUsuarioModal');
@@ -603,16 +727,15 @@ if (btn.classList.contains('ver-usuario')) {
   }
 
   function setTextoBotonUsuario(modo) {
-  const spanBtn = document.getElementById('admin-user-submit');
-  if (!spanBtn) return;
+    const spanBtn = document.getElementById('admin-user-submit');
+    if (!spanBtn) return;
 
-  if (modo === 'editar') {
-    spanBtn.textContent = "Editar Usuario";
-  } else {
-    spanBtn.textContent = "Crear Usuario";
+    if (modo === 'editar') {
+      spanBtn.textContent = "Editar Usuario";
+    } else {
+      spanBtn.textContent = "Crear Usuario";
+    }
   }
-}
-
 
   // ---------- Inicializar ----------
   renderizarTablaProductos();
