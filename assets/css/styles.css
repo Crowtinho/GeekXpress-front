@@ -1196,6 +1196,10 @@ body {
 .modal-backdrop.show {
   background: rgba(15, 5, 25, 0.85);
 }
+.modal.fade.show .modal-dialog {
+  transform: none !important;
+  transition: none !important;
+}
 
 .image-preview-container {
   display: flex;
