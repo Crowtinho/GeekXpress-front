@@ -209,7 +209,7 @@
 }
 
 .sn-sergio-back {
-  background-image: url('../img/backSergio.jpeg');
+  background-image: url('../img/backSergio.jpg');
 }
 
 .sn-alexa-back {
@@ -3268,6 +3268,8 @@ graciaaaas */
     font-size: 1rem;
   }
 }
+<<<<<<< HEAD
+=======
 
 /* BOTON DE CERRAR SESIÓN */
 #logoutMenu {
@@ -3292,3 +3294,4 @@ graciaaaas */
   box-shadow: 0 0 15px #00f7ff, 0 0 25px rgba(0, 247, 255, 0.6);
   transform: scale(1.05);
 }
+>>>>>>> 9de6ceda6b3293368f2d5a48a3ecf8c73c0887bd
