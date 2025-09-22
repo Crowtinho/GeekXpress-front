@@ -47,7 +47,7 @@ loginForm.addEventListener('submit', async (e) => {
       // Guardar token en localStorage
       localStorage.setItem("authToken", data.token);
       localStorage.setItem("userId", data.id);
-
+      // push de algo 
 
       // Decodificar JWT para obtener claims (role, usuario, etc.)
       const tokenParts = data.token.split(".");
