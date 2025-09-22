@@ -9,7 +9,7 @@ document.addEventListener("navbarLoaded", () => {
   // Revisa si hay usuario logueado
   const usuarioLogueado = JSON.parse(localStorage.getItem("usuarioLogueado"));
   if (usuarioLogueado) {
-    loginNav.textContent = usuarioLogueado.userName; // mostrar nombre
+    loginNav.textContent = usuarioLogueado.name; // mostrar nombre
     console.log("Usuario logueado:", usuarioLogueado.role);
 
 

@@ -45,6 +45,8 @@ loginForm.addEventListener('submit', async (e) => {
 
       // Guardar token en localStorage
       localStorage.setItem("authToken", data.token);
+      localStorage.setItem("userId", data.id);
+
 
       // Decodificar JWT para obtener claims (role, usuario, etc.)
       const tokenParts = data.token.split(".");
@@ -55,6 +57,7 @@ loginForm.addEventListener('submit', async (e) => {
       // localStorage.setItem("userRole", payload.role); // 👈 el claim correcto es "role"
       // localStorage.setItem("username", payload.sub);
       localStorage.setItem("usuarioLogueado", JSON.stringify({
+        name : data.name,
         userName: payload.sub,
         role: payload.role
       }));
