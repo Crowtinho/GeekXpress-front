@@ -23,7 +23,7 @@ tabRegister.addEventListener('click', () => {
   tabLogin.classList.remove('text-white', 'font-semibold');
 });
 
-// LOGIN
+// ===================== LOGIN =====================
 const loginForm = document.getElementById('login-form');
 loginForm.addEventListener('submit', async (e) => {
   e.preventDefault();
@@ -31,45 +31,53 @@ loginForm.addEventListener('submit', async (e) => {
   const userName = document.getElementById('username-login').value;
   const password = document.getElementById('password').value;
 
-try {
-  const res = await fetch("http://localhost:8080/users/login", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ userName, password })
-  });
+  try {
+    const res = await fetch("http://localhost:8080/users/login", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ userName, password })
+    });
 
-  if (res.ok) {
-    // Parseamos el JSON que devuelve el backend
-    const data = await res.json();
+    if (res.ok) {
+      const data = await res.json();
 
-    alert("Inicio de sesión exitoso.");
+      alert("Inicio de sesión exitoso.");
 
-    // Guardar token y id en localStorage
-    localStorage.setItem("authToken", data.token);
-    localStorage.setItem("userId", data.id);
+      // Guardar token en localStorage
+      localStorage.setItem("authToken", data.token);
 
-    // Guardar usuario logueado (opcional, para mostrar nombre en UI)
-    localStorage.setItem("usuarioLogueado", JSON.stringify({
-      userName: data.userName,
-      name: data.name,
-      lastName: data.lastName,
-      email: data.email
-    }));
+      // Decodificar JWT para obtener claims (role, usuario, etc.)
+      const tokenParts = data.token.split(".");
+      const payload = JSON.parse(atob(tokenParts[1]));
+      console.log("Payload JWT:", payload);
 
-    window.location.href = "../pages/catalog.html";
-    loginForm.reset();
-  } else {
-    const errText = await res.text();
-    alert(errText || "Error al iniciar sesión.");
+      // Guardar datos importantes
+      // localStorage.setItem("userRole", payload.role); // 👈 el claim correcto es "role"
+      // localStorage.setItem("username", payload.sub);
+      localStorage.setItem("usuarioLogueado", JSON.stringify({
+        userName: payload.sub,
+        role: payload.role
+      }));
+
+      // Redirigir según rol
+      if (payload.role === "ROLE_ADMIN") {
+        window.location.href = "../pages/admin.html";
+      } else {
+        window.location.href = "../pages/catalog.html";
+      }
+
+      loginForm.reset();
+    } else {
+      const errText = await res.text();
+      alert(errText || "Error al iniciar sesión.");
+    }
+  } catch (error) {
+    console.error("Error:", error);
+    alert("Error en la conexión con el servidor.");
   }
-} catch (error) {
-  console.error("Error:", error);
-  alert("Error en la conexión con el servidor.");
-}
-
 });
 
-// REGISTER
+// ===================== REGISTER =====================
 const registerForm = document.getElementById('register-form');
 registerForm.addEventListener('submit', async (e) => {
   e.preventDefault();

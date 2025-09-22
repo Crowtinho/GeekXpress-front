@@ -10,11 +10,11 @@ document.addEventListener("navbarLoaded", () => {
   const usuarioLogueado = JSON.parse(localStorage.getItem("usuarioLogueado"));
   if (usuarioLogueado) {
     loginNav.textContent = usuarioLogueado.name; // mostrar nombre
-    console.log("Usuario logueado:", usuarioLogueado.name);
+    console.log("Usuario logueado:", usuarioLogueado.role);
 
 
         // Si el usuario es admin, agregar enlace de vista admin
-    if (usuarioLogueado.rol === "admin") {
+    if (usuarioLogueado.role === "ROLE_ADMIN") {
       const menuCentral = document.querySelector(".navbar-nav"); // ul principal
       const liAdmin = document.createElement("li");
       liAdmin.classList.add("nav-item", "me-3");
