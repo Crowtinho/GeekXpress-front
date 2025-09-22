@@ -53,7 +53,27 @@ document.addEventListener("DOMContentLoaded", async () => {
   maybeSetText("product-description", product.description || "");
   maybeSetText("breadcrumb-title", product.name || "Producto");
 
+<<<<<<< HEAD
   // Estado
+=======
+  // ---------- BREADCRUMB DINÁMICO ----------
+const breadcrumbOl = document.querySelector(".breadcrumb");
+if (breadcrumbOl) {
+  breadcrumbOl.innerHTML = `
+    <li class="breadcrumb-item">
+      <a href="../index.html" class="text-decoration-none text-muted">Inicio</a>
+    </li>
+    <li class="breadcrumb-item">
+      <a href="../pages/catalog.html" class="text-decoration-none text-muted">${product.categoria || "Catálogo"}</a>
+    </li>
+    <li class="breadcrumb-item active text-muted" aria-current="page">
+      ${product.nombre || "Producto"}
+    </li>
+  `;
+}
+
+  // Estado (badge)
+>>>>>>> 78459ad2d7f8a6d669b67b643673dfb0ae070986
   const estadoEl = $("product-estado");
   if (estadoEl) {
     estadoEl.textContent = product.estado || "";
