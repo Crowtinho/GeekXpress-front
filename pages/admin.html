@@ -10,50 +10,42 @@
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
 </head>
 
-
-<!-- Modal Ver producto -->
-<div class="modal fade" id="detalleProductoModal" tabindex="-1" aria-hidden="true">
-  <div class="modal-dialog modal-lg modal-dialog-centered">
-    <div class="modal-content modal-custom">
-      <div class="modal-header border-0">
-        <h5 class="modal-title"><i class="bi bi-box"></i> Detalle del Producto</h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-      </div>
-      <div class="modal-body" id="detalleProductoBody">
-        <!-- Aquí se inyecta la info con JS -->
-
-
-      </div>
-      <div class="modal-footer border-0">
-        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
-      </div>
-    </div>
-  </div>
-</div>
-
-<!-- Modal Ver Usuario -->
-<div class="modal fade" id="detalleUsuarioModal" tabindex="-1" aria-hidden="true">
-  <div class="modal-dialog modal-lg modal-dialog-centered">
-    <div class="modal-content modal-custom">
-      <div class="modal-header border-0">
-        <h5 class="modal-title"><i class="bi bi-person"></i> Detalle del Usuario</h5>
-        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
-      </div>
-      <div class="modal-body" id="detalleUsuarioBody">
-        <!-- Aquí se inyecta la info con JS -->
-      </div>
-      <div class="modal-footer border-0">
-        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
-      </div>
-    </div>
-  </div>
-</div>
-
-
 <body>
+
+  <div class="modal fade" id="detalleProductoModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+      <div class="modal-content modal-custom">
+        <div class="modal-header border-0">
+          <h5 class="modal-title"><i class="bi bi-box"></i> Detalle del Producto</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body" id="detalleProductoBody">
+          </div>
+        <div class="modal-footer border-0">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal fade" id="detalleUsuarioModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+      <div class="modal-content modal-custom">
+        <div class="modal-header border-0">
+          <h5 class="modal-title"><i class="bi bi-person"></i> Detalle del Usuario</h5>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body" id="detalleUsuarioBody">
+          </div>
+        <div class="modal-footer border-0">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <nav id="navbar"></nav>
   <div class="container my-4">
-    <!-- Header -->
     <div class="d-flex justify-content-between align-items-center">
       <div>
         <h2 class="admin-title"><i class="bi bi-speedometer2"></i> Panel de Administración</h2>
@@ -64,7 +56,6 @@
       </div>
     </div>
 
-    <!-- Navegación -->
     <ul class="nav nav-pills my-4" id="adminTabs" role="tablist">
       <li class="nav-item" role="presentation">
         <button class="nav-link active" id="resumen-tab" data-bs-toggle="tab" data-bs-target="#resumen" type="button"
@@ -84,13 +75,11 @@
       </li>
       <li class="nav-item" role="presentation">
         <button class="nav-link" id="cupones-tab" data-bs-toggle="tab" data-bs-target="#cupones" type="button"
-          role="tab"><i class="bi bi-ticket-perforated"></i> Cupones</button>
+          role="tab"><i class="bi bi-ticket-perforada"></i> Cupones</button>
       </li>
     </ul>
 
-    <!-- Contenido -->
     <div class="tab-content">
-      <!-- Resumen -->
       <div class="tab-pane fade show active" id="resumen" role="tabpanel">
         <div class="row g-3">
           <div class="col-md-3">
@@ -124,7 +113,6 @@
         </div>
       </div>
 
-      <!-- Productos -->
       <div class="tab-pane fade" id="productos" role="tabpanel">
         <div class="admin-card">
           <div class="d-flex justify-content-between align-items-center mb-3">
@@ -141,13 +129,12 @@
               <thead>
                 <tr>
                   <th class="col-imagen">Imagen</th>
+                  <th class="col-id">ID</th>
                   <th class="col-nombre">Nombre</th>
                   <th class="col-descripcion">Descripción</th>
-                  <th class="col-sku">SKU</th>
                   <th class="col-categoria">Categoría</th>
                   <th class="col-precio">Precio</th>
                   <th class="col-stock">Stock</th>
-                  <th class="col-estado">Estado</th>
                   <th class="col-acciones">Acciones</th>
                 </tr>
               </thead>
@@ -158,7 +145,6 @@
         </div>
       </div>
 
-      <!-- Pedidos -->
       <div class="tab-pane fade" id="pedidos" role="tabpanel">
         <div class="admin-card">
           <h5><i class="bi bi-cart4"></i> Gestión de Pedidos</h5>
@@ -166,7 +152,6 @@
         </div>
       </div>
 
-      <!-- Usuarios -->
       <div class="tab-pane fade" id="usuarios" role="tabpanel">
         <div class="admin-card">
           <div class="d-flex justify-content-between align-items-center mb-3">
@@ -179,38 +164,35 @@
           </div>
           <input type="text" id="busquedaUsuario" class="form-control mb-3" placeholder="Buscar usuarios...">
           <div class="table-responsive">
-  <table class="table table-dark table-hover" id="tablaUsuarios">
-    <thead>
-      <tr>
-        <th class="col-nombre">Nombre</th>
-        <th class="col-email">Email</th>
-        <th class="col-documento">Documento</th>
-        <th class="col-telefono">Teléfono</th>
-        <th class="col-ciudad">Ciudad</th>
-        <th class="col-rol">Rol</th>
-        <th class="col-estado">Estado</th>
-        <th class="col-acciones">Acciones</th>
-      </tr>
-    </thead>
-    <tbody>
-    </tbody>
-  </table>
-</div>
+            <table class="table table-dark table-hover" id="tablaUsuarios">
+              <thead>
+                <tr>
+                  <th class="col-nombre">Nombre</th>
+                  <th class="col-email">Email</th>
+                  <th class="col-documento">Documento</th>
+                  <th class="col-telefono">Teléfono</th>
+                  <th class="col-ciudad">Ciudad</th>
+                  <th class="col-rol">Rol</th>
+                  <th class="col-estado">Estado</th>
+                  <th class="col-acciones">Acciones</th>
+                </tr>
+              </thead>
+              <tbody>
+              </tbody>
+            </table>
           </div>
         </div>
       </div>
 
-      <!-- Cupones -->
       <div class="tab-pane fade" id="cupones" role="tabpanel">
         <div class="admin-card">
-          <h5><i class="bi bi-ticket-perforated"></i> Gestión de Cupones</h5>
+          <h5><i class="bi bi-ticket-perforada"></i> Gestión de Cupones</h5>
           <p>Aquí irían los cupones activos.</p>
         </div>
       </div>
     </div>
   </div>
 
-  <!-- Modal Nuevo Usuario -->
   <div class="modal fade" id="nuevoUsuarioModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-lg modal-dialog-centered">
       <div class="modal-content">
@@ -311,7 +293,6 @@
     </div>
   </div>
 
-  <!-- Modal Nuevo Producto -->
   <div class="modal fade" id="nuevoProductoModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-lg modal-dialog-centered">
       <div class="modal-content">
@@ -326,10 +307,6 @@
                 <div class="col">
                   <label for="nombreProducto" class="form-label">Nombre del Producto</label>
                   <input type="text" class="form-control" id="nombreProducto" required>
-                </div>
-                <div class="col">
-                  <label for="skuProducto" class="form-label">SKU</label>
-                  <input type="text" class="form-control" id="skuProducto" required>
                 </div>
               </div>
               <div class="mb-3">
@@ -358,26 +335,16 @@
                     <option value="Accesorios">Accesorios</option>
                   </select>
                 </div>
-                <div class="col">
-                  <label for="estadoProducto" class="form-label">Estado</label>
-                  <select class="form-select" id="estadoProducto">
-                    <option value="Activo" selected>Activo</option>
-                    <option value="Inactivo">Inactivo</option>
-                  </select>
-                </div>
               </div>
               <div class="mb-3">
-                <label for="imagenesProducto" class="form-label">Imágenes del Producto</label>
+                <label for="imagenesProducto" class="form-label">Imagen(es) del Producto</label>
                 <input type="file" class="form-control" id="imagenesProducto" accept="image/*" multiple>
-                <small class="text-muted">Puedes seleccionar una o varias imágenes</small>
+                <small class="text-muted">Sube una o más imágenes para el producto.</small>
+                <div class="image-preview-container mt-2 d-flex flex-wrap gap-2"></div>
               </div>
               <div class="modal-footer border-0">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-                <button type="submit" class="btn btn-custom" >
-                  <span id="admin-product-submit">
-                    Crear Producto
-                  </span>
-                </button>
+                <button type="submit" class="btn btn-custom" id="admin-product-submit">Crear Producto</button>
               </div>
             </form>
           </div>
@@ -392,8 +359,6 @@
   <script src="../assets/js/carrito.js"></script>
   <script src="../assets/js/nav.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-
-
 </body>
 
 </html>
