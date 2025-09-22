@@ -25,7 +25,7 @@ document.addEventListener("DOMContentLoaded", () => {
       allProducts = data.map(p => ({
         id: p.id,
         nombre: p.name,
-        categoria: p.categories?.[0]?.name || "Sin categoría",
+        categoria: (p.categories && p.categories.length > 0) ? p.categories.join(", ") : "Sin categoría",
         precio: p.price,
         stock: p.stock,
         descripcion: p.description,
@@ -39,26 +39,6 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   }
 
-// 🔹 Llenar el select dinámicamente con categorías desde el backend
-// async function loadCategories() {
-//   try {
-//     const response = await fetch("http://localhost:8080/categories");
-//     if (!response.ok) throw new Error("Error al obtener categorías");
-//     const categories = await response.json();
-
-//     // Siempre agregamos la opción "todas"
-//     categoryFilter.innerHTML = `<option value="all">Todas las categorías</option>`;
-
-//     categories.forEach(cat => {
-//       const option = document.createElement("option");
-//       option.value = cat.name; // ⚠️ importante: debe coincidir con lo que trae tu backend
-//       option.textContent = cat.name;
-//       categoryFilter.appendChild(option);
-//     });
-//   } catch (err) {
-//     console.error("❌ Error cargando categorías:", err);
-//   }
-// }
 
   // 🔹 Formatear precio en COP
   function formatearPrecio(valor) {
@@ -115,12 +95,14 @@ document.addEventListener("DOMContentLoaded", () => {
 
     const filtered = allProducts.filter(prod => {
       const matchesCategory =
-        selectedCategory === "" || selectedCategory === "all" || prod.categoria === selectedCategory;
+      selectedCategory === "" || selectedCategory === "all" || prod.categoria.split(", ").includes(selectedCategory);
       const matchesSearch =
         prod.nombre.toLowerCase().includes(searchTerm) ||
         prod.descripcion?.toLowerCase().includes(searchTerm);
 
+        console.log(selectedCategory);
       return matchesCategory && matchesSearch;
+      
     });
 
     renderProducts(filtered);
