@@ -40,25 +40,25 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
 // 🔹 Llenar el select dinámicamente con categorías desde el backend
-async function loadCategories() {
-  try {
-    const response = await fetch("http://localhost:8080/categories");
-    if (!response.ok) throw new Error("Error al obtener categorías");
-    const categories = await response.json();
+// async function loadCategories() {
+//   try {
+//     const response = await fetch("http://localhost:8080/categories");
+//     if (!response.ok) throw new Error("Error al obtener categorías");
+//     const categories = await response.json();
 
-    // Siempre agregamos la opción "todas"
-    categoryFilter.innerHTML = `<option value="all">Todas las categorías</option>`;
+//     // Siempre agregamos la opción "todas"
+//     categoryFilter.innerHTML = `<option value="all">Todas las categorías</option>`;
 
-    categories.forEach(cat => {
-      const option = document.createElement("option");
-      option.value = cat.name; // ⚠️ importante: debe coincidir con lo que trae tu backend
-      option.textContent = cat.name;
-      categoryFilter.appendChild(option);
-    });
-  } catch (err) {
-    console.error("❌ Error cargando categorías:", err);
-  }
-}
+//     categories.forEach(cat => {
+//       const option = document.createElement("option");
+//       option.value = cat.name; // ⚠️ importante: debe coincidir con lo que trae tu backend
+//       option.textContent = cat.name;
+//       categoryFilter.appendChild(option);
+//     });
+//   } catch (err) {
+//     console.error("❌ Error cargando categorías:", err);
+//   }
+// }
 
   // 🔹 Formatear precio en COP
   function formatearPrecio(valor) {

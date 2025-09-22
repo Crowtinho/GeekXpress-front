@@ -28,36 +28,45 @@ const loginForm = document.getElementById('login-form');
 loginForm.addEventListener('submit', async (e) => {
   e.preventDefault();
 
-  const username = document.getElementById('username-login').value;
+  const userName = document.getElementById('username-login').value;
   const password = document.getElementById('password').value;
 
-  try {
-    const res = await fetch("http://localhost:8080/users/login", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ username, password })
-    });
+try {
+  const res = await fetch("http://localhost:8080/users/login", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ userName, password })
+  });
 
-    if (res.ok) {
-      const token = await res.text();
-      alert("Inicio de sesión exitoso.");
-      
-      // Guardar token
-      localStorage.setItem("authToken", token);
+  if (res.ok) {
+    // Parseamos el JSON que devuelve el backend
+    const data = await res.json();
 
-      // Guardar usuario para que el carrito lo reconozca
-      localStorage.setItem("usuarioLogueado", JSON.stringify({ username }));
+    alert("Inicio de sesión exitoso.");
 
-      window.location.href = "../pages/catalog.html";
-      loginForm.reset();
-    } else {
-      const errText = await res.text();
-      alert(errText || "Error al iniciar sesión.");
-    }
-  } catch (error) {
-    console.error("Error:", error);
-    alert("Error en la conexión con el servidor.");
+    // Guardar token y id en localStorage
+    localStorage.setItem("authToken", data.token);
+    localStorage.setItem("userId", data.id);
+
+    // Guardar usuario logueado (opcional, para mostrar nombre en UI)
+    localStorage.setItem("usuarioLogueado", JSON.stringify({
+      userName: data.userName,
+      name: data.name,
+      lastName: data.lastName,
+      email: data.email
+    }));
+
+    window.location.href = "../pages/catalog.html";
+    loginForm.reset();
+  } else {
+    const errText = await res.text();
+    alert(errText || "Error al iniciar sesión.");
   }
+} catch (error) {
+  console.error("Error:", error);
+  alert("Error en la conexión con el servidor.");
+}
+
 });
 
 // REGISTER
@@ -67,7 +76,7 @@ registerForm.addEventListener('submit', async (e) => {
 
   const firstName = document.getElementById('first-name').value;
   const lastName = document.getElementById('last-name').value;
-  const username = document.getElementById('username-register').value;
+  const userName = document.getElementById('username-register').value;
   const email = document.getElementById('email-register').value;
   const password = document.getElementById('password-register').value;
   const confirmPassword = document.getElementById('confirm-password').value;
@@ -82,7 +91,7 @@ registerForm.addEventListener('submit', async (e) => {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
-        username,
+        userName,
         name: firstName,
         lastName,
         email,

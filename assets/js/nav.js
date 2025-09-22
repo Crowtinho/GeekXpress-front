@@ -9,8 +9,8 @@ document.addEventListener("navbarLoaded", () => {
   // Revisa si hay usuario logueado
   const usuarioLogueado = JSON.parse(localStorage.getItem("usuarioLogueado"));
   if (usuarioLogueado) {
-    loginNav.textContent = usuarioLogueado.firstName; // mostrar nombre
-    console.log("Usuario logueado:", usuarioLogueado.firstName);
+    loginNav.textContent = usuarioLogueado.name; // mostrar nombre
+    console.log("Usuario logueado:", usuarioLogueado.name);
 
 
         // Si el usuario es admin, agregar enlace de vista admin
