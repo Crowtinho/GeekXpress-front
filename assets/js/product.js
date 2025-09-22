@@ -26,7 +26,8 @@ document.addEventListener("DOMContentLoaded", async () => {
   // Llamada al backend para obtener info completa del producto
   let product = null;
   try {
-    const res = await fetch(`http://localhost:8080/products/${productId}`);
+    // const res = await fetch(`http://localhost:8080/products/${productId}`);
+    const res = await fetch(`https://2224knmwcz.us-east-1.awsapprunner.com/products/${productId}`);
     if (!res.ok) throw new Error("Error al obtener producto");
     product = await res.json();
   } catch (err) {

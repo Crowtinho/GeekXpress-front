@@ -1,6 +1,7 @@
 // admin.js (integrado con el backend de productos)
 
-const API_BASE_URL = 'http://localhost:8080';
+// const API_BASE_URL = 'http://localhost:8080';
+const API_BASE_URL = 'https://2224knmwcz.us-east-1.awsapprunner.com';
 const CLOUDINARY_CLOUD_NAME = 'dz4qsmco8';
 const CLOUDINARY_UPLOAD_PRESET = 'geekxpress';
 const CLOUDINARY_UPLOAD_URL = `https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD_NAME}/image/upload`;
@@ -73,7 +74,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     async function createProduct(productData) {
-        const response = await fetch(`${API_BASE_URL}/products`, {
+        const response = await fetch(`${API_BASE_URL}/products/admin`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(productData),
@@ -86,7 +87,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     async function updateProduct(id, productData) {
-        const response = await fetch(`${API_BASE_URL}/products/${id}`, {
+        const response = await fetch(`${API_BASE_URL}/products/admin/${id}`, {
             method: 'PUT',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(productData),
@@ -99,7 +100,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     async function deleteProduct(id) {
-        const response = await fetch(`${API_BASE_URL}/products/${id}`, {
+        const response = await fetch(`${API_BASE_URL}/products/admin/${id}`, {
             method: 'DELETE',
         });
         if (!response.ok) {

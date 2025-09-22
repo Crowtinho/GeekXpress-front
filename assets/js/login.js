@@ -32,7 +32,8 @@ loginForm.addEventListener('submit', async (e) => {
   const password = document.getElementById('password').value;
 
   try {
-    const res = await fetch("http://localhost:8080/users/login", {
+    // const res = await fetch("http://localhost:8080/users/login", {
+    const res = await fetch("https://2224knmwcz.us-east-1.awsapprunner.com/users/login", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ userName, password })
@@ -98,7 +99,8 @@ registerForm.addEventListener('submit', async (e) => {
   }
 
   try {
-    const res = await fetch("http://localhost:8080/users/register", {
+    // const res = await fetch("http://localhost:8080/users/register", {
+    const res = await fetch("https://2224knmwcz.us-east-1.awsapprunner.com/users/register", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({

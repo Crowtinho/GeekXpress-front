@@ -10,7 +10,7 @@ function initCarrito() {
     const iconoCarrito = document.getElementById('icono-carrito') || document.querySelector('.contador-carrito')?.closest('a,button,.nav-link,div');
     const totalElemento = document.getElementById('total');
     const btnPago = document.getElementById('btn-pago');
-    const API_URL = "http://localhost:8080/cart";
+    const API_URL = "https://2224knmwcz.us-east-1.awsapprunner.com/cart";
 
     const userId = parseInt(localStorage.getItem("userId"), 10);
     if (isNaN(userId)) return;
