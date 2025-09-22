@@ -14,7 +14,9 @@ document.addEventListener("DOMContentLoaded", () => {
   async function fetchProducts() {
     try {
       console.log("🔄 Solicitando productos al backend...");
-      const url = "http://localhost:8080/products";
+
+      // const url = "http://localhost:8080/products";
+      const url = "https://2224knmwcz.us-east-1.awsapprunner.com/products";
       const response = await fetch(url);
       if (!response.ok) throw new Error("Error en la petición al backend");
       const data = await response.json();
