@@ -131,7 +131,7 @@
                   <th class="col-imagen">Imagen</th>
                   <th class="col-id">ID</th>
                   <th class="col-nombre">Nombre</th>
-                  <th class="col-descripcion">Descripción</th>
+                  <!-- <th class="col-descripcion">Descripción</th> -->
                   <th class="col-categoria">Categoría</th>
                   <th class="col-precio">Precio</th>
                   <th class="col-stock">Stock</th>
@@ -168,12 +168,14 @@
               <thead>
                 <tr>
                   <th class="col-nombre">Nombre</th>
+                  <th class="col-nombre">Apellido</th>
+                  <th class="col-nombre">Usuario</th>
                   <th class="col-email">Email</th>
-                  <th class="col-documento">Documento</th>
-                  <th class="col-telefono">Teléfono</th>
-                  <th class="col-ciudad">Ciudad</th>
+                  <!-- <th class="col-documento">Documento</th> -->
+                  <!-- <th class="col-telefono">Teléfono</th> -->
+                  <!-- <th class="col-ciudad">Ciudad</th> -->
                   <th class="col-rol">Rol</th>
-                  <th class="col-estado">Estado</th>
+                  <!-- <th class="col-estado">Estado</th> -->
                   <th class="col-acciones">Acciones</th>
                 </tr>
               </thead>
@@ -205,15 +207,27 @@
             <form id="formNuevoUsuario">
               <div class="row mb-3">
                 <div class="col-md-6">
-                  <label for="nombreUsuario" class="form-label">Nombre Completo</label>
+                  <label for="nombreUsuario" class="form-label">Nombre</label>
                   <input type="text" class="form-control" id="nombreUsuario" required>
+                </div>
+                <div class="col-md-6">
+                  <label for="apellidoUsuario" class="form-label">Apellido</label>
+                  <input type="text" class="form-control" id="apellidoUsuario" required>
+                </div>
+                <div class="col-md-6">
+                  <label for="usuario" class="form-label">Usuario</label>
+                  <input type="text" class="form-control" id="usuario" required>
                 </div>
                 <div class="col-md-6">
                   <label for="emailUsuario" class="form-label">Email</label>
                   <input type="email" class="form-control" id="emailUsuario" required>
                 </div>
+                <div class="col-md-6">
+                  <label for="passwordUsuario" class="form-label">Contraseña</label>
+                  <input type="password" class="form-control" id="passwordUsuario" required>
+                </div>
               </div>
-              <div class="row mb-3">
+              <!-- <div class="row mb-3">
                 <div class="col-md-4">
                   <label for="tipoDocumento" class="form-label">Tipo de Documento</label>
                   <select id="tipoDocumento" class="form-select" required>
@@ -232,8 +246,8 @@
                   <label for="telefonoUsuario" class="form-label">Teléfono</label>
                   <input type="tel" class="form-control" id="telefonoUsuario">
                 </div>
-              </div>
-              <div class="row mb-3">
+              </div> -->
+              <!-- <div class="row mb-3">
                 <div class="col-md-6">
                   <label for="fechaNacimiento" class="form-label">Fecha de Nacimiento</label>
                   <input type="date" class="form-control" id="fechaNacimiento">
@@ -248,44 +262,44 @@
                     <option value="prefiero_no_decir">Prefiero no decir</option>
                   </select>
                 </div>
-              </div>
-              <div class="mb-3">
+              </div> -->
+              <!-- <div class="mb-3">
                 <label for="direccionUsuario" class="form-label">Dirección</label>
                 <input type="text" class="form-control" id="direccionUsuario" placeholder="Calle, número, barrio">
-              </div>
-              <div class="row mb-3">
+              </div> -->
+              <!-- <div class="row mb-3">
                 <div class="col-md-6">
                   <label for="ciudadUsuario" class="form-label">Ciudad</label>
                   <input type="text" class="form-control" id="ciudadUsuario">
-                </div>
-                <div class="col-md-6">
+                </div> -->
+                <!-- <div class="col-md-6">
                   <label for="rolUsuario" class="form-label">Rol</label>
                   <select id="rolUsuario" class="form-select">
                     <option value="cliente" selected>Cliente</option>
                     <option value="admin">Administrador</option>
                     <option value="moderador">Moderador</option>
                   </select>
-                </div>
+                </div> -->
               </div>
-              <div class="row mb-3">
-                <div class="col-md-6">
+              <!-- <div class="row mb-3"> -->
+                <!-- <div class="col-md-6">
                   <label for="estadoUsuario" class="form-label">Estado</label>
                   <select id="estadoUsuario" class="form-select">
                     <option value="Activo" selected>Activo</option>
                     <option value="Inactivo">Inactivo</option>
                     <option value="Suspendido">Suspendido</option>
                   </select>
-                </div>
-                <div class="col-md-6">
+                </div> -->
+                <!-- <div class="col-md-6">
                   <label for="fechaRegistro" class="form-label">Fecha de Registro</label>
                   <input type="date" class="form-control" id="fechaRegistro" value="" readonly>
-                </div>
-              </div>
-              <div class="mb-3">
+                </div> -->
+              <!-- </div> -->
+              <!-- <div class="mb-3">
                 <label for="notasUsuario" class="form-label">Notas Administrativas</label>
                 <textarea class="form-control" id="notasUsuario" rows="3" placeholder="Información adicional sobre el usuario..."></textarea>
-              </div>
-              <button type="submit" class="btn btn-custom">Crear Usuario</button>
+              </div> -->
+              <button type="submit" class="btn btn-custom" id="boton-crear-usuario">Crear Usuario</button>
             </form>
           </div>
         </div>

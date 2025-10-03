@@ -15,8 +15,8 @@ document.addEventListener("DOMContentLoaded", () => {
     try {
       console.log("🔄 Solicitando productos al backend...");
 
-      // const url = "http://localhost:8080/products";
-      const url = "https://2224knmwcz.us-east-1.awsapprunner.com/products";
+      const url = "http://localhost:8080/products";
+      // const url = "https://2224knmwcz.us-east-1.awsapprunner.com/products";
       const response = await fetch(url);
       if (!response.ok) throw new Error("Error en la petición al backend");
       const data = await response.json();
@@ -55,7 +55,6 @@ document.addEventListener("DOMContentLoaded", () => {
   function createProductCard(prod) {
     const cardCol = document.createElement("div");
     cardCol.classList.add("col-12", "col-sm-6", "col-md-4", "mb-4");
-
     cardCol.innerHTML = `
       <div class="card product-card h-100" data-id="${prod.id}">
         <div class="card-img-container">

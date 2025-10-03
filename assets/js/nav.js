@@ -43,6 +43,10 @@ document.addEventListener("navbarLoaded", () => {
     // Evento de cerrar sesión
     logoutMenu.addEventListener("click", () => {
       localStorage.removeItem("usuarioLogueado");
+      localStorage.removeItem("userId");
+      localStorage.removeItem("userRole");
+      localStorage.removeItem("authToken");
+      localStorage.removeItem("usuarios");
       logoutMenu.style.display = "none";
       loginNav.textContent = "Iniciar sesión";
       window.location.reload(); // opcional: recargar para actualizar el nav

@@ -73,7 +73,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     async function createProduct(productData) {
-        const response = await fetch(`${API_BASE_URL}/products`, {
+        const response = await fetch(`${API_BASE_URL}/products/admin`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(productData),
@@ -86,7 +86,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     async function updateProduct(id, productData) {
-        const response = await fetch(`${API_BASE_URL}/products/${id}`, {
+        const response = await fetch(`${API_BASE_URL}/products/admin/${id}`, {
             method: 'PUT',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(productData),
@@ -99,7 +99,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     async function deleteProduct(id) {
-        const response = await fetch(`${API_BASE_URL}/products/${id}`, {
+        const response = await fetch(`${API_BASE_URL}/products/admin/${id}`, {
             method: 'DELETE',
         });
         if (!response.ok) {
@@ -139,7 +139,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 'https://via.placeholder.com/60';
 
             const categorias = Array.from(producto.categories).map(c =>
-                `<span class="badge ${getCategoriaClass(c)}">${c}</span>`).join(' ');
+                `<span class=" ${getCategoriaClass(c)}">${c}</span>`).join(' ');
 
             const fila = document.createElement('tr');
             fila.innerHTML = `
@@ -149,7 +149,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 </td>
                 <td>${producto.id || ''}</td>
                 <td>${producto.name}</td>
-                <td>${producto.description ? String(producto.description).substring(0, 40) + '...' : 'Sin descripción'}</td>
                 <td>${categorias || 'Sin categoría'}</td>
                 <td>${formatearCOP(producto.price)}</td>
                 <td>${producto.stock ?? 0}</td>
@@ -240,18 +239,24 @@ document.addEventListener('DOMContentLoaded', () => {
                 didOpen: () => { Swal.showLoading(); }
             });
 
-            let uploadedImages = [];
-            if (selectedFiles.length > 0) {
+            let uploadedImages = selectedFiles
+                .filter(f => f.url) // imágenes existentes
+                .map(f => ({ url: f.url, mainImage: f.mainImage }));
+
+            if (selectedFiles.some(f => f.file)) {
                 try {
-                    const uploadPromises = selectedFiles.map(f => uploadToCloudinary(f.file));
-                    uploadedImages = await Promise.all(uploadPromises);
+                    const uploadPromises = selectedFiles
+                        .filter(f => f.file) // solo nuevas
+                        .map(f => uploadToCloudinary(f.file));
+                    const nuevas = await Promise.all(uploadPromises);
+                    uploadedImages = [...uploadedImages, ...nuevas];
                     if (uploadedImages.length > 0) uploadedImages[0].mainImage = true;
                 } catch (err) {
                     Swal.fire('Error', 'Ocurrió un error subiendo una o más imágenes.', 'error');
-                    console.error('Error subiendo imágenes a Cloudinary:', err);
                     return;
                 }
             }
+
 
             const productData = {
                 name: nombre,
@@ -334,8 +339,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (imagePreview) {
                     imagePreview.innerHTML = '';
                     selectedFiles = [];
+
                     const imgs = Array.isArray(producto.images) ? producto.images : [];
                     imgs.forEach((p, idx) => {
+                        // Mostrar imagen
                         const container = document.createElement('div');
                         container.className = 'image-preview-item position-relative';
                         container.style.width = '100px';
@@ -360,8 +367,16 @@ document.addEventListener('DOMContentLoaded', () => {
 
                         container.appendChild(img);
                         imagePreview.appendChild(container);
+
+                        // Guardar en selectedFiles como existente
+                        selectedFiles.push({
+                            file: null,     // no hay archivo local
+                            url: p.url,     // viene del backend
+                            mainImage: !!p.mainImage
+                        });
                     });
                 }
+
 
                 if (modalProductoEl) new bootstrap.Modal(modalProductoEl).show();
                 return;
@@ -407,220 +422,233 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Llama a la función de renderizado inicial
     renderizarTablaProductos();
-
     const tablaUsuariosBody = document.querySelector('#tablaUsuarios tbody');
-    const busquedaUsuarioInput = document.getElementById('busquedaUsuario');
-    const formNuevoUsuario = document.getElementById('formNuevoUsuario');
-    let editUserIndex = null;
-    let usuarios = JSON.parse(localStorage.getItem('usuarios')) || [
-      { usuario: 'Carlos Pérez', email: 'carlos@example.com', tipoDoc: 'CC', documento: '12345678', telefono: '3001234567', fechaNacimiento: '1985-03-15', genero: 'masculino', direccion: 'Calle 123 #45-67', ciudad: 'Bogotá', rol: 'cliente', estado: 'Activo', fechaRegistro: '2024-01-15', notas: 'Cliente frecuente' },
-      { usuario: 'María Gómez', email: 'maria@example.com', tipoDoc: 'CE', documento: '87654321', telefono: '3109876543', fechaNacimiento: '1990-07-22', genero: 'femenino', direccion: 'Carrera 50 #20-30', ciudad: 'Medellín', rol: 'cliente', estado: 'Inactivo', fechaRegistro: '2024-02-20', notas: '' }
-    ];
+const busquedaUsuarioInput = document.getElementById('busquedaUsuario');
+const formNuevoUsuario = document.getElementById('formNuevoUsuario');
+let editUserIndex = null;
 
-    function guardarUsuarios() { localStorage.setItem('usuarios', JSON.stringify(usuarios)); }
-    function limpiarFormularioUsuario() {
-      if (!formNuevoUsuario) return;
-      formNuevoUsuario.reset();
-      editUserIndex = null;
-      const fechaReg = document.getElementById('fechaRegistro');
-      if (fechaReg) fechaReg.value = new Date().toISOString().split('T')[0];
-      setTextoBotonUsuario("crear");
+let usuarios = [];
+
+async function cargarUsuarios() {
+  try {
+    const resp = await fetch("http://localhost:8080/users");
+    if (!resp.ok) throw new Error("Error al cargar usuarios");
+    usuarios = await resp.json();
+    renderizarUsuarios();
+  } catch (err) {
+    console.error("Error cargando usuarios:", err);
+    usuarios = [];
+    renderizarUsuarios();
+  }
+}
+
+function limpiarFormularioUsuario() {
+  if (!formNuevoUsuario) return;
+  formNuevoUsuario.reset();
+  editUserIndex = null;
+  const fechaReg = document.getElementById('fechaRegistro');
+  if (fechaReg) fechaReg.value = new Date().toISOString().split('T')[0];
+  setTextoBotonUsuario("crear");
+}
+
+function renderizarUsuarios(filtro = '') {
+  if (!tablaUsuariosBody) return;
+  tablaUsuariosBody.innerHTML = '';
+  const q = filtro.trim().toLowerCase();
+  const filtrados = usuarios.filter(u => {
+    if (!q) return true;
+    return (
+      (u.userName || '').toLowerCase().includes(q) ||
+      (u.name || '').toLowerCase().includes(q) ||
+      (u.lastName || '').toLowerCase().includes(q) ||
+      (u.email || '').toLowerCase().includes(q)
+    );
+  });
+
+  if (filtrados.length === 0) {
+    const no = document.createElement('tr');
+    no.innerHTML = `<td colspan="8" class="text-center">No hay usuarios para mostrar.</td>`;
+    tablaUsuariosBody.appendChild(no);
+    return;
+  }
+
+  filtrados.forEach(u => {
+    const realIndex = usuarios.findIndex(x => x.id === u.id);
+    const fila = document.createElement('tr');
+
+    function getRolClass(rol) {
+      switch(rol?.toLowerCase()) {
+        case 'admin': case 'administrador': return 'rol-admin';
+        case 'cliente': return 'rol-cliente';
+        case 'moderador': return 'rol-moderador';
+        default: return 'rol-cliente';
+      }
     }
 
-    function renderizarUsuarios(filtro = '') {
-      if (!tablaUsuariosBody) return;
-      tablaUsuariosBody.innerHTML = '';
-      const q = filtro.trim().toLowerCase();
-      const filtrados = usuarios.filter(u => {
-        if (!q) return true;
-        return (
-          (u.usuario || '').toLowerCase().includes(q) ||
-          (u.email || '').toLowerCase().includes(q) ||
-          (u.documento || '').toLowerCase().includes(q)
-        );
-      });
+    fila.innerHTML = `
+      <td>${u.name}</td>
+      <td>${u.lastName}</td>
+      <td>${u.userName}</td>
+      <td>${u.email || ''}</td>
+      <td>
+        <span class="${getRolClass(u.userName === 'admin' ? 'admin' : (u.rol || 'user'))}">
+          ${u.userName === 'admin' ? 'admin' : (u.rol || 'user')}
+        </span>
+      </td>
+      <td>
+        <button class="btn btn-sm btn-warning editar-usuario" data-index="${realIndex}" title="Editar">✏️</button>
+        <button class="btn btn-sm btn-info ver-usuario" data-index="${realIndex}" title="Ver">👁</button>
+        <button class="btn btn-sm btn-danger eliminar-usuario" data-index="${realIndex}" title="Eliminar">🗑️</button>
+      </td>
+    `;
+    tablaUsuariosBody.appendChild(fila);
+  });
+}
 
-      if (filtrados.length === 0) {
-        const no = document.createElement('tr');
-        no.innerHTML = `<td colspan="8" class="text-center">No hay usuarios para mostrar.</td>`;
-        tablaUsuariosBody.appendChild(no);
-        return;
+if (busquedaUsuarioInput) {
+  busquedaUsuarioInput.addEventListener('keyup', function () {
+    renderizarUsuarios(this.value);
+  });
+}
+
+const nuevoUsuarioBtn = document.getElementById('nuevoUsuarioBtn');
+if (nuevoUsuarioBtn) {
+  nuevoUsuarioBtn.addEventListener('click', limpiarFormularioUsuario);
+}
+
+if (formNuevoUsuario) {
+  formNuevoUsuario.addEventListener('submit', async e => {
+    e.preventDefault();
+    const nuevoUsuario = {
+      userName: document.getElementById('usuario')?.value || '',
+      name: document.getElementById('nombreUsuario')?.value || '',
+      lastName: document.getElementById('apellidoUsuario')?.value || '',
+      email: document.getElementById('emailUsuario')?.value || '',
+      password: document.getElementById('passwordUsuario')?.value || '',
+    };
+
+    try {
+      if (editUserIndex !== null) {
+        // EDITAR usuario en backend
+        const userId = usuarios[editUserIndex].id;
+        const resp = await fetch(`http://localhost:8080/users/admin/${userId}`, {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(nuevoUsuario)
+        });
+        if (!resp.ok) throw new Error("Error al actualizar usuario");
+
+        Swal.fire('Actualizado!', `Usuario "${nuevoUsuario.userName}" actualizado exitosamente.`, 'success');
+      } else {
+        // CREAR usuario en backend
+        const resp = await fetch("http://localhost:8080/users/register", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(nuevoUsuario)
+        });
+        if (!resp.ok) throw new Error("Error al crear usuario");
+
+        Swal.fire('Creado!', `Usuario "${nuevoUsuario.userName}" creado exitosamente.`, 'success');
       }
 
-      filtrados.forEach(u => {
-        const realIndex = usuarios.findIndex(x => x.email === u.email && x.documento === u.documento);
-        const fila = document.createElement('tr');
-        
-        function getEstadoUsuarioClass(estado) {
-          switch(estado?.toLowerCase()) {
-            case 'activo': return 'estado-activo';
-            case 'inactivo': return 'estado-inactivo';
-            case 'suspendido': return 'estado-suspendido';
-            default: return 'estado-inactivo';
+      await cargarUsuarios();
+      limpiarFormularioUsuario();
+
+      const modalEl = document.getElementById('nuevoUsuarioModal');
+      if (modalEl) {
+        const modal = bootstrap.Modal.getInstance(modalEl) || new bootstrap.Modal(modalEl);
+        modal.hide();
+      }
+    } catch (err) {
+      console.error(err);
+      Swal.fire('Error', 'No se pudo guardar el usuario en el servidor.', 'error');
+    }
+  });
+}
+
+if (tablaUsuariosBody) {
+  tablaUsuariosBody.addEventListener('click', async e => {
+    const btn = e.target.closest('button');
+    if (!btn) return;
+    const index = parseInt(btn.dataset.index);
+    if (isNaN(index) || !usuarios[index]) return;
+
+    if (btn.classList.contains('eliminar-usuario')) {
+      Swal.fire({
+        title: '¿Estás seguro?',
+        text: `¿Seguro que deseas eliminar al usuario "${usuarios[index].userName}"?`,
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#d33',
+        cancelButtonColor: '#3085d6',
+        confirmButtonText: 'Sí, eliminar',
+        cancelButtonText: 'Cancelar'
+      }).then(async (result) => {
+        if (result.isConfirmed) {
+          try {
+            const userId = usuarios[index].id;
+            const resp = await fetch(`http://localhost:8080/users/admin/${userId}`, {
+              method: "DELETE"
+            });
+            if (!resp.ok) throw new Error("Error al eliminar usuario");
+
+            Swal.fire('Eliminado!', 'El usuario ha sido eliminado.', 'success');
+            await cargarUsuarios();
+          } catch (err) {
+            console.error(err);
+            Swal.fire('Error', 'No se pudo eliminar el usuario en el servidor.', 'error');
           }
         }
-        
-        function getRolClass(rol) {
-          switch(rol?.toLowerCase()) {
-            case 'admin': case 'administrador': return 'rol-admin';
-            case 'cliente': return 'rol-cliente';
-            case 'moderador': return 'rol-moderador';
-            default: return 'rol-cliente';
-          }
-        }
-
-        fila.innerHTML = `
-          <td class="producto-nombre">${u.usuario}</td>
-          <td>${u.email}</td>
-          <td><div class="fw-semibold">${u.tipoDoc}</div><small class="text-muted">${u.documento}</small></td>
-          <td>${u.telefono || ''}</td>
-          <td>${u.ciudad || ''}</td>
-          <td><span class="${getRolClass(u.rol)}">${u.rol}</span></td>
-          <td><span class="${getEstadoUsuarioClass(u.estado)}">${u.estado}</span></td>
-          <td>
-            <button class="btn btn-sm btn-warning editar-usuario" data-index="${realIndex}" title="Editar">✏️</button>
-            <button class="btn btn-sm btn-info ver-usuario" data-index="${realIndex}" title="Ver">👁</button>
-            <button class="btn btn-sm btn-danger eliminar-usuario" data-index="${realIndex}" title="Eliminar">🗑️</button>
-          </td>
-        `;
-        tablaUsuariosBody.appendChild(fila);
       });
+      return;
     }
 
-    if (busquedaUsuarioInput) {
-      busquedaUsuarioInput.addEventListener('keyup', function () {
-        renderizarUsuarios(this.value);
-      });
+    if (btn.classList.contains('ver-usuario')) {
+      const u = usuarios[index];
+      const infoHtml = `
+        <div class="col">
+            <p><strong>Nombre:</strong> ${u.userName}</p>
+            <p><strong>Email:</strong> ${u.email}</p>
+            <p><strong>Documento:</strong> ${u.tipoDoc || ''} ${u.documento || ''}</p>
+            <p><strong>Teléfono:</strong> ${u.telefono || 'No registrado'}</p>
+            <p><strong>Ciudad:</strong> ${u.ciudad || 'No registrada'}</p>
+            <p><strong>Rol:</strong> ${u.rol || ''}</p>
+            <p><strong>Estado:</strong> ${u.estado || ''}</p>
+            <p><strong>Fecha de Registro:</strong> ${u.fechaRegistro || ''}</p>
+        </div>
+        ${u.notas ? `<div class="mt-3"><p><strong>Notas:</strong> ${u.notas}</p></div>` : ''}
+      `;
+      document.getElementById('detalleUsuarioBody').innerHTML = infoHtml;
+      const modal = new bootstrap.Modal(document.getElementById('detalleUsuarioModal'));
+      modal.show();
     }
 
-    const nuevoUsuarioBtn = document.getElementById('nuevoUsuarioBtn');
-    if (nuevoUsuarioBtn) {
-      nuevoUsuarioBtn.addEventListener('click', limpiarFormularioUsuario);
+    if (btn.classList.contains('editar-usuario')) {
+      editUserIndex = index;
+      const u = usuarios[index];
+      document.getElementById('nombreUsuario').value = u.name || '';
+      document.getElementById('apellidoUsuario').value = u.lastName || '';
+      document.getElementById('usuario').value = u.userName || '';
+      document.getElementById('emailUsuario').value = u.email || '';
+      document.getElementById('passwordUsuario').value = u.password ||'';
+
+      setTextoBotonUsuario("editar");
+      const modalEl = document.getElementById('nuevoUsuarioModal');
+      if (modalEl) new bootstrap.Modal(modalEl).show();
     }
+  });
+}
 
-    if (formNuevoUsuario) {
-      formNuevoUsuario.addEventListener('submit', e => {
-        e.preventDefault();
-        const nuevoUsuario = {
-          usuario: document.getElementById('nombreUsuario')?.value || '',
-          email: document.getElementById('emailUsuario')?.value || '',
-          tipoDoc: document.getElementById('tipoDocumento')?.value || '',
-          documento: document.getElementById('documentoUsuario')?.value || '',
-          telefono: document.getElementById('telefonoUsuario')?.value || '',
-          fechaNacimiento: document.getElementById('fechaNacimiento')?.value || '',
-          genero: document.getElementById('generoUsuario')?.value || '',
-          direccion: document.getElementById('direccionUsuario')?.value || '',
-          ciudad: document.getElementById('ciudadUsuario')?.value || '',
-          rol: document.getElementById('rolUsuario')?.value || 'cliente',
-          estado: document.getElementById('estadoUsuario')?.value || 'Activo',
-          fechaRegistro: document.getElementById('fechaRegistro')?.value || new Date().toISOString().split('T')[0],
-          notas: document.getElementById('notasUsuario')?.value || '',
-          password: document.getElementById('passwordUsuario')?.value || '',
-        };
+function setTextoBotonUsuario(modo) {
+  const spanBtn = document.getElementById('admin-user-submit');
+  if (!spanBtn) return;
+  if (modo === 'editar') {
+    spanBtn.textContent = "Editar Usuario";
+  } else {
+    spanBtn.textContent = "Crear Usuario";
+  }
+}
 
-        if (editUserIndex !== null) {
-          usuarios[editUserIndex] = nuevoUsuario;
-          Swal.fire('Actualizado!', `Usuario "${nuevoUsuario.usuario}" actualizado exitosamente.`, 'success');
-        } else {
-          if (usuarios.some(u => u.email === nuevoUsuario.email)) { Swal.fire('Error', 'Ya existe un usuario con ese email.', 'error'); return; }
-          if (usuarios.some(u => u.documento === nuevoUsuario.documento && u.tipoDoc === nuevoUsuario.tipoDoc)) { Swal.fire('Error', 'Ya existe un usuario con ese tipo y número de documento.', 'error'); return; }
-          usuarios.push(nuevoUsuario);
-          Swal.fire('Creado!', `Usuario "${nuevoUsuario.usuario}" creado exitosamente.`, 'success');
-        }
-
-        localStorage.setItem('usuarios', JSON.stringify(usuarios));
-        renderizarUsuarios(busquedaUsuarioInput?.value || '');
-        limpiarFormularioUsuario();
-        const modalEl = document.getElementById('nuevoUsuarioModal');
-        if (modalEl) {
-          const modal = bootstrap.Modal.getInstance(modalEl) || new bootstrap.Modal(modalEl);
-          modal.hide();
-        }
-      });
-    }
-
-    if (tablaUsuariosBody) {
-      tablaUsuariosBody.addEventListener('click', e => {
-        const btn = e.target.closest('button');
-        if (!btn) return;
-        const index = parseInt(btn.dataset.index);
-        if (isNaN(index) || !usuarios[index]) return;
-
-        if (btn.classList.contains('eliminar-usuario')) {
-          Swal.fire({
-            title: '¿Estás seguro?',
-            text: `¿Seguro que deseas eliminar al usuario "${usuarios[index].usuario}"?`,
-            icon: 'warning',
-            showCancelButton: true,
-            confirmButtonColor: '#d33',
-            cancelButtonColor: '#3085d6',
-            confirmButtonText: 'Sí, eliminar',
-            cancelButtonText: 'Cancelar'
-          }).then((result) => {
-            if (result.isConfirmed) {
-              usuarios.splice(index, 1);
-              guardarUsuarios();
-              renderizarUsuarios(busquedaUsuarioInput?.value || '');
-              Swal.fire('Eliminado!', 'El usuario ha sido eliminado.', 'success');
-            }
-          });
-          return;
-        }
-
-        if (btn.classList.contains('ver-usuario')) {
-          const u = usuarios[index];
-          const infoHtml = `
-            <div class="col">
-                <p><strong>Nombre:</strong> ${u.usuario}</p>
-                <p><strong>Email:</strong> ${u.email}</p>
-                <p><strong>Documento:</strong> ${u.tipoDoc} ${u.documento}</p>
-                <p><strong>Teléfono:</strong> ${u.telefono || 'No registrado'}</p>
-                <p><strong>Ciudad:</strong> ${u.ciudad || 'No registrada'}</p>
-                <p><strong>Rol:</strong> ${u.rol}</p>
-                <p><strong>Estado:</strong> ${u.estado}</p>
-                <p><strong>Fecha de Registro:</strong> ${u.fechaRegistro}</p>
-            </div>
-            ${u.notas ? `<div class="mt-3"><p><strong>Notas:</strong> ${u.notas}</p></div>` : ''}
-          `;
-          document.getElementById('detalleUsuarioBody').innerHTML = infoHtml;
-          const modal = new bootstrap.Modal(document.getElementById('detalleUsuarioModal'));
-          modal.show();
-        }
-
-        if (btn.classList.contains('editar-usuario')) {
-          editUserIndex = index;
-          const u = usuarios[index];
-          document.getElementById('nombreUsuario').value = u.usuario || '';
-          document.getElementById('emailUsuario').value = u.email || '';
-          document.getElementById('tipoDocumento').value = u.tipoDoc || '';
-          document.getElementById('documentoUsuario').value = u.documento || '';
-          document.getElementById('telefonoUsuario').value = u.telefono || '';
-          document.getElementById('fechaNacimiento').value = u.fechaNacimiento || '';
-          document.getElementById('generoUsuario').value = u.genero || '';
-          document.getElementById('direccionUsuario').value = u.direccion || '';
-          document.getElementById('ciudadUsuario').value = u.ciudad || '';
-          document.getElementById('rolUsuario').value = u.rol || 'cliente';
-          document.getElementById('estadoUsuario').value = u.estado || 'Activo';
-          document.getElementById('fechaRegistro').value = u.fechaRegistro || new Date().toISOString().split('T')[0];
-          document.getElementById('notasUsuario').value = u.notas || '';
-          document.getElementById('passwordUsuario').value = '';
-
-          setTextoBotonUsuario("editar");
-          const modalEl = document.getElementById('nuevoUsuarioModal');
-          if (modalEl) new bootstrap.Modal(modalEl).show();
-        }
-      });
-    }
-
-    function setTextoBotonUsuario(modo) {
-        const spanBtn = document.getElementById('admin-user-submit');
-        if (!spanBtn) return;
-        if (modo === 'editar') {
-            spanBtn.textContent = "Editar Usuario";
-        } else {
-            spanBtn.textContent = "Crear Usuario";
-        }
-    }
-
-    renderizarUsuarios();
+// 👉 Llamada inicial para cargar usuarios desde el backend
+cargarUsuarios();
 });

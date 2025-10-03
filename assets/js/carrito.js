@@ -13,7 +13,7 @@ function initCarrito() {
     const API_URL = "http://localhost:8080/cart";
 
     const userId = parseInt(localStorage.getItem("userId"), 10);
-    if (isNaN(userId)) return;
+    // if (isNaN(userId)) return;
 
     // --------------------
     // Bloqueo por producto para evitar doble click
@@ -151,11 +151,27 @@ function initCarrito() {
         document.addEventListener('click', async (e) => {
             if (!e.target.matches('.btn-agregar-carrito, .product-btn')) return;
 
+
             const boton = e.target;
             const card = boton.closest('.card, .product-card');
             const productId = parseInt(card.dataset.id, 10);
             if (!productId) return;
 
+            // const userId = parseInt(localStorage.getItem("userId"), 10);
+            if (isNaN(userId)) {
+                Swal.fire({
+                    icon: "warning",
+                    title: "Debes iniciar sesión",
+                    text: "Por favor inicia sesión para agregar productos al carrito",
+                    confirmButtonText: "Iniciar sesión"
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        // 👉 Cambia esta ruta por la de tu vista de login
+                        window.location.href = "./login.html";
+                    }
+                });
+                return;
+            }
             const success = await addToCartBackend(productId, 1);
             if (success) {
                 Swal.fire({

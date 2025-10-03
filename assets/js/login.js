@@ -31,54 +31,68 @@ loginForm.addEventListener('submit', async (e) => {
   const userName = document.getElementById('username-login').value;
   const password = document.getElementById('password').value;
 
-  try {
-    const res = await fetch("http://localhost:8080/users/login", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ userName, password })
-    });
+try {
+  const res = await fetch("http://localhost:8080/users/login", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ userName, password })
+  });
 
-    if (res.ok) {
-      const data = await res.json();
+  if (res.ok) {
+    const data = await res.json();
+    console.log("Respuesta del backend:", data);
 
-      alert("Inicio de sesión exitoso.");
+    // Guardar token y userId en localStorage
+    localStorage.setItem("authToken", data.token);
+    localStorage.setItem("userId", data.id);
 
-      // Guardar token en localStorage
-      localStorage.setItem("authToken", data.token);
-      localStorage.setItem("userId", data.id);
+    // Decodificar JWT para obtener claims
+    const tokenParts = data.token.split(".");
+    const payload = JSON.parse(atob(tokenParts[1]));
+    console.log("Payload JWT:", payload);
 
+    // Guardar datos del usuario logueado
+    localStorage.setItem("usuarioLogueado", JSON.stringify({
+      name: data.name,
+      userName: payload.sub,
+      role: payload.role
+    }));
 
-      // Decodificar JWT para obtener claims (role, usuario, etc.)
-      const tokenParts = data.token.split(".");
-      const payload = JSON.parse(atob(tokenParts[1]));
-      console.log("Payload JWT:", payload);
-
-      // Guardar datos importantes
-      // localStorage.setItem("userRole", payload.role); // 👈 el claim correcto es "role"
-      // localStorage.setItem("username", payload.sub);
-      localStorage.setItem("usuarioLogueado", JSON.stringify({
-        name : data.name,
-        userName: payload.sub,
-        role: payload.role
-      }));
-
-      // Redirigir según rol
+    // Mostrar SweetAlert y redirigir cuando termine
+    Swal.fire({
+      icon: "success",
+      title: "Inicio de sesión exitoso",
+      showConfirmButton: false,
+      timer: 1500
+    }).then(() => {
       if (payload.role === "ROLE_ADMIN") {
         window.location.href = "../pages/admin.html";
       } else {
         window.location.href = "../pages/catalog.html";
       }
+    });
 
-      loginForm.reset();
-    } else {
-      const errText = await res.text();
-      alert(errText || "Error al iniciar sesión.");
-    }
-  } catch (error) {
-    console.error("Error:", error);
-    alert("Error en la conexión con el servidor.");
+    loginForm.reset();
+
+  } else {
+    const errText = await res.text();
+    Swal.fire({
+      icon: "error",
+      title: "Error al iniciar sesión",
+      text: errText || "Usuario o contraseña incorrectos"
+    });
   }
+
+} catch (error) {
+  console.error("Error:", error);
+  Swal.fire({
+    icon: "error",
+    title: "Error de conexión",
+    text: "No se pudo conectar con el servidor. Intenta nuevamente."
+  });
+}
 });
+
 
 // ===================== REGISTER =====================
 const registerForm = document.getElementById('register-form');

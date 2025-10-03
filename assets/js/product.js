@@ -14,14 +14,12 @@ document.addEventListener("DOMContentLoaded", async () => {
     try { return raw ? JSON.parse(raw) : fallback; } catch { return fallback; }
   };
 
-  // Obtener id del producto
-  const rawSelected = localStorage.getItem("selectedProduct");
-  const selected = safeParseJSON(rawSelected, null);
-  if (!selected || !selected.id) {
-    console.warn("No se encontró selectedProduct en localStorage");
-    return;
-  }
-  const productId = selected.id;
+// Obtener id del producto guardado en localStorage
+const productId = localStorage.getItem("selectedProductId");
+if (!productId) {
+  console.warn("No se encontró selectedProductId en localStorage");
+  return;
+}
 
   // Llamada al backend para obtener info completa del producto
   let product = null;
