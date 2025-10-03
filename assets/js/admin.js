@@ -1,6 +1,7 @@
 // admin.js (integrado con el backend de productos)
 
-const API_BASE_URL = 'http://localhost:8080';
+// const API_BASE_URL = 'http://localhost:8080';
+const API_BASE_URL = 'https://8mq33rknsp.us-east-1.awsapprunner.com';
 const CLOUDINARY_CLOUD_NAME = 'dz4qsmco8';
 const CLOUDINARY_UPLOAD_PRESET = 'geekxpress';
 const CLOUDINARY_UPLOAD_URL = `https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD_NAME}/image/upload`;
@@ -431,7 +432,8 @@ let usuarios = [];
 
 async function cargarUsuarios() {
   try {
-    const resp = await fetch("http://localhost:8080/users");
+    // const resp = await fetch("http://localhost:8080/users");
+    const resp = await fetch(`${API_BASE_URL}/users`);
     if (!resp.ok) throw new Error("Error al cargar usuarios");
     usuarios = await resp.json();
     renderizarUsuarios();
@@ -531,7 +533,7 @@ if (formNuevoUsuario) {
       if (editUserIndex !== null) {
         // EDITAR usuario en backend
         const userId = usuarios[editUserIndex].id;
-        const resp = await fetch(`http://localhost:8080/users/admin/${userId}`, {
+        const resp = await fetch(`${API_BASE_URL}/users/admin/${userId}`, {
           method: "PUT",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(nuevoUsuario)
@@ -541,7 +543,7 @@ if (formNuevoUsuario) {
         Swal.fire('Actualizado!', `Usuario "${nuevoUsuario.userName}" actualizado exitosamente.`, 'success');
       } else {
         // CREAR usuario en backend
-        const resp = await fetch("http://localhost:8080/users/register", {
+        const resp = await fetch(`${API_BASE_URL}users/register`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(nuevoUsuario)
@@ -587,7 +589,7 @@ if (tablaUsuariosBody) {
         if (result.isConfirmed) {
           try {
             const userId = usuarios[index].id;
-            const resp = await fetch(`http://localhost:8080/users/admin/${userId}`, {
+            const resp = await fetch(`${API_BASE_URL}/users/admin/${userId}`, {
               method: "DELETE"
             });
             if (!resp.ok) throw new Error("Error al eliminar usuario");
